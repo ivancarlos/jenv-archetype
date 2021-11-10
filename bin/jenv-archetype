@@ -44,34 +44,36 @@ EOF
     exit 1
 fi
 
+new-project()
+{
+    read -p "Insert project Name: " project
+    project=${project:-notEmpty}
 
-read -p "Insert project Name: " project
-project=${project:-notEmpty}
+    package=br.eng.ivanlopes
 
-package=br.eng.ivanlopes
+    xmlfile=~/.m2/archetype-catalog.xml
 
-xmlfile=~/.m2/archetype-catalog.xml
+    N=$( xmlstarlet sel -t -v  'count(//archetype)' <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile ) )
 
-N=$( xmlstarlet sel -t -v  'count(//archetype)' <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile ) )
-
-cat <<EOF | sed 's/^ *//' |dmenu -i -l 52 -fn 'Droid Sans Mono-16' -nf yellow -nb black -sf black -sb white | sh
+    cat <<EOF | sed 's/^ *//' |dmenu -i -l 52 -fn 'Droid Sans Mono-16' -nf yellow -nb black -sf black -sb white | sh
     $( for i in `seq $N`; do
-        p=/archetype-catalog/archetypes/archetype[$i]/groupId
-        a_group_id=$(
-            xmlstarlet sel -t -v "$p" <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile )
-        )
 
-        p=/archetype-catalog/archetypes/archetype[$i]/artifactId
-        a_artifact_id=$(
-            xmlstarlet sel -t -v "$p" <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile )
-        )
+    p=/archetype-catalog/archetypes/archetype[$i]/groupId
+    a_group_id=$(
+        xmlstarlet sel -t -v "$p" <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile )
+    )
 
-        p=/archetype-catalog/archetypes/archetype[$i]/version
-        a_version=$(
-            xmlstarlet sel -t -v "$p" <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile )
-        )
+    p=/archetype-catalog/archetypes/archetype[$i]/artifactId
+    a_artifact_id=$(
+    xmlstarlet sel -t -v "$p" <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile )
+    )
 
-        echo mvn archetype:generate \
+    p=/archetype-catalog/archetypes/archetype[$i]/version
+    a_version=$(
+    xmlstarlet sel -t -v "$p" <( sed -e '2,4d' -e '1a<archetype-catalog>' $xmlfile )
+    )
+
+    echo mvn archetype:generate \
         -DarchetypeArtifactId=$a_artifact_id \
         -DartifactId=$project \
         -DgroupId=$package \
@@ -81,4 +83,7 @@ cat <<EOF | sed 's/^ *//' |dmenu -i -l 52 -fn 'Droid Sans Mono-16' -nf yellow -n
         -DinteractiveMode=false
     done)
 EOF
+}
 
+
+new-project
